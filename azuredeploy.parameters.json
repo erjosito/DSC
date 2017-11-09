@@ -1,0 +1,26 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmName": { "value": "myVm" },
+        "adminUsername": { "value": "jose"},
+        "adminPassword": { "value": "Microsoft123!"},
+        "vnetName": { "value": "myVnet!"},
+        "subnetName": { "value": "subnet1"},
+
+        "modulesUrl": { "value": "https://github.com/Azure/azure-quickstart-templates/raw/master/dsc-extension-azure-automation-pullserver/UpdateLCMforAAPull.zip" },
+        "configurationFunction": { "value": "UpdateLCMforAAPull.ps1\\ConfigureLCMforAAPull" },
+
+        "registrationKey": { "value": "zwc1uis4aIP54YGCfSyvcq2lRxrnz3IZO+02TH9jED/VItFg7PkJb1poGeZ4Sl23qmI31JSGP8VQVmzVNbM3gQ==" },
+        "registrationUrl": { "value": "https://we-agentservice-prod-1.azure-automation.net/accounts/0cbf9646-e5b2-453a-a5f3-700d426e02fc" },
+        "nodeConfigurationName": { "value": "TestConfig.WebServer" },
+
+        "configurationMode": { "value": "ApplyAndMonitor" },
+        "configurationModeFrequencyMins": { "value": 15 },
+        "refreshFrequencyMins": { "value": 30 },
+        "rebootNodeIfNeeded": { "value": true },
+        "actionAfterReboot": { "value": "ContinueConfiguration" },
+        "allowModuleOverwrite": { "value": false },
+        "timestamp": { "value": "MM/dd/yyyy H:mm:ss tt" }
+    }
+}

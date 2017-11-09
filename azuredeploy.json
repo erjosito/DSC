@@ -1,0 +1,338 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the VM to be created with DSC configuration to"
+            }
+        },
+		"adminUsername": {
+            "type": "string",
+			"metadata": { "description": "Username to login to the VM, either over SSH for Linux VMs, or over RDP for Windows VMs" }
+        },
+		"adminPassword": {
+            "type": "securestring",
+			"metadata": { "description": "Password to login to the VM." }
+        },
+        "vmSize": {
+            "defaultValue": "Standard_A0",
+            "type": "string",
+			"allowedValues": [ "Standard_A0", "Standard_A1_v2", "Standard_D2_v3", "Standard_D2s_v3", "Standard_D1_v2", "Standard_DS1_v2" ],
+            "metadata": { "description": "Size of the new VM. Only a limited subset of sizes are supported" }
+        },
+        "vnetName": {
+            "defaultValue": "myVnet",
+            "type": "string",
+			"metadata": { "description": "vnet where new VM should be placed. This vnet must already exist." }
+        },
+         "subnetName": {
+            "defaultValue": "default",
+            "type": "string",
+			"metadata": { "description": "Subnet where the new VM should be placed. This subnet must already exist." }
+        },
+        "modulesUrl": {
+            "type": "string",
+            "defaultValue": "https://github.com/Azure/azure-quickstart-templates/raw/master/dsc-extension-azure-automation-pullserver/UpdateLCMforAAPull.zip",
+            "metadata": {
+                "description": "URL for the DSC configuration package. NOTE: Can be a Github url(raw) to the zip file (this is the default value)"
+            }
+        },
+        "configurationFunction": {
+            "type": "string",
+            "defaultValue": "UpdateLCMforAAPull.ps1\\ConfigureLCMforAAPull",
+            "metadata": {
+                "description": "DSC configuration function to call. Should contain filename and function in format fileName.ps1\\configurationfunction"
+            }
+        },
+        "registrationKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Registration key to use to onboard to the Azure Automation DSC pull/reporting server"
+            }
+        },
+        "registrationUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Registration url of the Azure Automation DSC pull/reporting server"
+            }
+        },
+        "nodeConfigurationName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the node configuration, on the Azure Automation DSC pull server, that this node will be configured as"
+            }
+        },
+        "configurationMode": {
+            "type": "string",
+            "defaultValue": "ApplyAndMonitor",
+            "allowedValues": [
+                "ApplyOnly",
+                "ApplyAndMonitor",
+                "ApplyAndAutoCorrect"
+            ],
+            "metadata": {
+                "description": "DSC agent (LCM) configuration mode setting. ApplyOnly, ApplyAndMonitor, or ApplyAndAutoCorrect"
+            }
+        },
+        "configurationModeFrequencyMins": {
+            "type": "int",
+            "defaultValue": 15,
+            "metadata": {
+                "description": "DSC agent (LCM) configuration mode frequency setting, in minutes"
+            }
+        },
+        "refreshFrequencyMins": {
+            "type": "int",
+            "defaultValue": 30,
+            "metadata": {
+                "description": "DSC agent (LCM) refresh frequency setting, in minutes"
+            }
+        },
+        "rebootNodeIfNeeded": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "DSC agent (LCM) rebootNodeIfNeeded setting"
+            }
+        },
+        "actionAfterReboot": {
+            "type": "string",
+            "defaultValue": "ContinueConfiguration",
+            "allowedValues": [
+                "ContinueConfiguration",
+                "StopConfiguration"
+            ],
+            "metadata": {
+                "description": "DSC agent (LCM) actionAfterReboot setting. ContinueConfiguration or StopConfiguration"
+            }
+        },
+        "allowModuleOverwrite": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "DSC agent (LCM) allowModuleOverwrite setting"
+            }
+        },
+        "timestamp": {
+            "type": "string",
+            "metadata": {
+                "description": "The current datetime, as a string, to force the request to go through ARM even if all fields are the same as last ARM deployment of this template; example in parameters file is in MM/dd/yyyy H:mm:ss tt format"
+            }
+        }
+    },
+    "variables": {
+        "vmApiVersion": "2017-03-30",
+        "networkApiVersion": "2017-06-01",
+        "extensionApiVersion": "2015-06-15",
+        "diskType": "Standard_LRS",
+        "diskSize": 32,
+        "diskName": "[concat(parameters('vmName'),'-osDisk')]",
+        "avSetName": "[concat(parameters('vmName'), '-avSet')]",
+        "nicName": "[concat(parameters('vmName'),'-nic')]",
+        "nsgName": "[concat(parameters('vmName'),'-nsg')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[variables('avSetName')]",
+            "apiVersion": "[variables('vmApiVersion')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "platformUpdateDomainCount": 2,
+                "platformFaultDomainCount": 2
+            },
+            "sku": {
+                "name": "Aligned"
+            }
+        },
+        {
+            "comments": "Create Network Interface Card, associated to the NSG",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicName')]",
+            "apiVersion": "[variables('networkApiVersion')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "[concat(parameters('vmName'), '-ipconfig1')]",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '/subnets/', parameters('subnetName'))]"
+                            }
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(variables('nsgName')))]"
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[variables('nsgName')]"
+            ]
+        },
+        {
+            "comments": "Create a NSG",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "variables('nsgName')]",
+            "apiVersion": "[variables('networkApiVersion')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "default-allow-rdp",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "comments": "Deploy Virtual Machine",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('vmName')]",
+            "apiVersion": "[variables('vmApiVersion')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('avSetName'))]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2012-R2-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage",
+                        "name": "[variables('diskName')]",
+                        "diskSizeGb": "[variables('diskSize')]",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('diskType')]"
+                        }
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]",
+                            "properties": {
+                                "primary": true
+                            }
+                        }
+                    ]
+                }
+            },
+            "resources": [],
+            "dependsOn": [
+                "[variables('nicName')]",
+                "[variables('avSetName')]"
+            ]
+        },
+        {
+        "type": "Microsoft.Compute/virtualMachines/extensions",
+        "name": "[concat(parameters('vmName'),'/Microsoft.Powershell.DSC')]",
+        "apiVersion": "[variables('extensionApiVersion')]",
+        "location": "[resourceGroup().location]",
+        "properties": {
+            "publisher": "Microsoft.Powershell",
+            "type": "DSC",
+            "typeHandlerVersion": "2.19",
+            "autoUpgradeMinorVersion": true,
+            "protectedSettings": {
+                "Items": {
+                    "registrationKeyPrivate": "[parameters('registrationKey')]"
+                }
+            },
+            "settings": {
+                "ModulesUrl": "[parameters('modulesUrl')]",
+                "SasToken": "",
+                "ConfigurationFunction": "[parameters('configurationFunction')]",
+                "Properties": [
+                    {
+                        "Name": "RegistrationKey",
+                        "Value": {
+                            "UserName": "PLACEHOLDER_DONOTUSE",
+                            "Password": "PrivateSettingsRef:registrationKeyPrivate"
+                        },
+                        "TypeName": "System.Management.Automation.PSCredential"
+                    },
+                    {
+                        "Name": "RegistrationUrl",
+                        "Value": "[parameters('registrationUrl')]",
+                        "TypeName": "System.String"
+                    },
+                    {
+                        "Name": "NodeConfigurationName",
+                        "Value": "[parameters('nodeConfigurationName')]",
+                        "TypeName": "System.String"
+                    },
+                    {
+                        "Name": "ConfigurationMode",
+                        "Value": "[parameters('configurationMode')]",
+                        "TypeName": "System.String"
+                    },
+                    {
+                        "Name": "ConfigurationModeFrequencyMins",
+                        "Value": "[parameters('configurationModeFrequencyMins')]",
+                        "TypeName": "System.Int32"
+                    },
+                    {
+                        "Name": "RefreshFrequencyMins",
+                        "Value": "[parameters('refreshFrequencyMins')]",
+                        "TypeName": "System.Int32"
+                    },
+                    {
+                        "Name": "RebootNodeIfNeeded",
+                        "Value": "[parameters('rebootNodeIfNeeded')]",
+                        "TypeName": "System.Boolean"
+                    },
+                    {
+                        "Name": "ActionAfterReboot",
+                        "Value": "[parameters('actionAfterReboot')]",
+                        "TypeName": "System.String"
+                    },
+                    {
+                        "Name": "AllowModuleOverwrite",
+                        "Value": "[parameters('allowModuleOverwrite')]",
+                        "TypeName": "System.Boolean"
+                    },
+                    {
+                        "Name": "Timestamp",
+                        "Value": "[parameters('timestamp')]",
+                        "TypeName": "System.String"
+                    }
+                ]
+            }
+        }
+    }]
+}
