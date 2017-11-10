@@ -19,27 +19,30 @@ configuration TestConfig
         }
         File index
         {            	
-            # Download a home page
-            Ensure = "Present"              	
-            Type = "File"             	
-            SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/index.html"            	
-            DestinationPath = "C:\inetpub\wwwroot\index.html"            
+            # Download an HTML home page
+            Ensure = "Present"
+            Type = "File"
+            SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/index.html"
+            DestinationPath = "C:\inetpub\wwwroot\index.html"
+            MatchSource = $true
         }
         File favicon
         {            	
             # favicon.ico for the previous home page
-            Ensure = "Present"              	
-            Type = "File"             	
-            SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/favicon.ico"            	
-            DestinationPath = "C:\inetpub\wwwroot\favicon.ico"            
+            Ensure = "Present"
+            Type = "File"
+            SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/favicon.ico"
+            DestinationPath = "C:\inetpub\wwwroot\favicon.ico"
+            MatchSource = $false
         }
         File cssfile
         {            	
             # And the CSS styles file for the home page
-            Ensure = "Present"              	
-            Type = "File"             	
-            SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/styles.css"            	
-            DestinationPath = "C:\inetpub\wwwroot\styles.css"            
+            Ensure = "Present"
+            Type = "File"
+            SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/styles.css"
+            DestinationPath = "C:\inetpub\wwwroot\styles.css"
+            MatchSource = $false
         }
     }
 
