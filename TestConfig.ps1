@@ -22,7 +22,7 @@ configuration TestConfig
             # Download an HTML home page
             Ensure = "Present"
             Type = "File"
-            SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/index.html"
+            SourcePath ="C:\application\data\index.html"
             DestinationPath = "C:\inetpub\wwwroot\index.html"
             MatchSource = $true
         }
@@ -31,7 +31,7 @@ configuration TestConfig
             # favicon.ico for the previous home page
             Ensure = "Present"
             Type = "File"
-            SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/favicon.ico"
+            SourcePath ="C:\application\data\favicon.ico"
             DestinationPath = "C:\inetpub\wwwroot\favicon.ico"
             MatchSource = $false
         }
@@ -40,7 +40,7 @@ configuration TestConfig
             # And the CSS styles file for the home page
             Ensure = "Present"
             Type = "File"
-            SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/styles.css"
+            SourcePath ="C:\application\data\styles.css"
             DestinationPath = "C:\inetpub\wwwroot\styles.css"
             MatchSource = $false
         }
