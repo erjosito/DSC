@@ -17,6 +17,30 @@ configuration TestConfig
             StartupType = 'Automatic'
             State = 'Running'
         }
+        File index
+        {            	
+            # Download a home page
+            Ensure = "Present"              	
+            Type = "File"             	
+            SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/index.html"            	
+            DestinationPath = "C:\inetpub\wwwroot"            
+        }
+        File favicon
+        {            	
+            # favicon.ico for the previous home page
+            Ensure = "Present"              	
+            Type = "File"             	
+            SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/favicon.ico"            	
+            DestinationPath = "C:\inetpub\wwwroot"            
+        }
+        File cssfile
+        {            	
+            # And the CSS styles file for the home page
+            Ensure = "Present"              	
+            Type = "File"             	
+            SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/styles.css"            	
+            DestinationPath = "C:\inetpub\wwwroot"            
+        }
     }
 
     Node myConfig2
