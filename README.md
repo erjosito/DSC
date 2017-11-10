@@ -6,8 +6,8 @@ In this repo you can find some artifacts to play with DSC in Azure German Cloud.
 
 ### Azure Automation Account
 
-You need essentially two things:
-- Azure Automation account in the international cloud: I use West Europe. You need to import an example config (for example the TestConfig.ps1 file in this repo) and compile it. Verify that you have two Config Nodes
+1. You need an Azure Automation account in the international cloud: I use West Europe. You need to import an example config (for example the TestConfig.ps1 file in this repo) and compile it. Verify that you have two Config Nodes
+2. You need to copy the URL and key of your automation account and save them for later (Notepad is your friend)
 
 ### Resource Group and Vnet in the Azure German Cloud
 
@@ -43,6 +43,8 @@ az network vnet create -n myVnet --address-prefixes 192.168.0.0/16 --subnet-name
 ### Deploy the template
 
 You probably want to clone the repo to your local computer, so that you have the parameters file (the template could be referred with the URL). You can use this command:
+
+Before deploying, make sure you replace the URL and Key in the parameters file with the ones of your Automation Account
 
 ```
 az group deployment create --template-file ./azuredeploy.json --parameters @./azuredeploy.parameters.json
