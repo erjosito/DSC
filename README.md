@@ -51,3 +51,10 @@ az group deployment create --template-file ./azuredeploy.json --parameters @./az
 ```
 
 At this point it takes quite a lot of time to deploy, but after some (many) minutes, you should see the VM popping up in your automation account with the state "Compliant"
+
+
+### CI/CD
+
+You might want to automatically change the configuration of your VM when the source code for the DSC configuration changes. Although there is no native integration between Azure Automation DSC and Github, you could have a script which is triggered by Github through a Webhook upon every push, which updates the node configurations.
+
+You can find an example of such a script in this repo (DownloadDscConfig.ps1). You can create a Powershell Runbook in Azure Automation, create a Webhook, and configure that Webhook in your Github repository.
