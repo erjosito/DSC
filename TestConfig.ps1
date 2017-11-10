@@ -1,6 +1,6 @@
 configuration TestConfig
 {
-    Node WebServer
+    Node myConfig1
     {
         WindowsFeature IIS
         {
@@ -10,7 +10,7 @@ configuration TestConfig
         }
     }
 
-    Node NotWebServer
+    Node myConfig2
     {
         WindowsFeature IIS
         {

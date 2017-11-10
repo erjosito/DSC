@@ -8,6 +8,12 @@
                 "description": "Name of the VM to be created with DSC configuration to"
             }
         },
+        "vmSku": {
+            "type": "string",
+            "defaultValue": "2016-Datacenter-smalldisk",
+            "allowedValues": ["2016-Datacenter", "2012-R2-Datacenter", "2016-Datacenter-smalldisk", "2012-R2-Datacenter-smalldisk"],
+            "metadata": { "description": "Windows image to deploy" }
+        },
 		"adminUsername": {
             "type": "string",
 			"metadata": { "description": "Username to login to the VM, either over SSH for Linux VMs, or over RDP for Windows VMs" }
@@ -127,11 +133,11 @@
         "networkApiVersion": "2017-06-01",
         "extensionApiVersion": "2015-06-15",
         "diskType": "Standard_LRS",
-        "diskSize": 32,
         "diskName": "[concat(parameters('vmName'),'-osDisk')]",
         "avSetName": "[concat(parameters('vmName'), '-avSet')]",
         "nicName": "[concat(parameters('vmName'),'-nic')]",
-        "nsgName": "[concat(parameters('vmName'),'-nsg')]"
+        "nsgName": "[concat(parameters('vmName'),'-nsg')]",
+        "pipName": "[concat(parameters('vmName'),'-pip')]"
     },
     "resources": [
         {
@@ -148,7 +154,7 @@
             }
         },
         {
-            "comments": "Create Network Interface Card, associated to the NSG",
+            "comments": "Create Network Interface Card, associated to the NSG and PIP",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('nicName')]",
             "apiVersion": "[variables('networkApiVersion')]",
@@ -161,6 +167,9 @@
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
                                 "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '/subnets/', parameters('subnetName'))]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('pipName'))]"
                             }
                         }
                     }
@@ -175,19 +184,33 @@
             },
             "resources": [],
             "dependsOn": [
-                "[variables('nsgName')]"
+                "[variables('nsgName')]",
+                "[variables('pipName')]"
             ]
+        },
+        {
+            "comments": "Public IP address",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('pipName')]",
+            "apiVersion": "[variables('networkApiVersion')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4
+            },
+            "resources": [],
+            "dependsOn": []
         },
         {
             "comments": "Create a NSG",
             "type": "Microsoft.Network/networkSecurityGroups",
-            "name": "variables('nsgName')]",
+            "name": "[variables('nsgName')]",
             "apiVersion": "[variables('networkApiVersion')]",
             "location": "[resourceGroup().location]",
             "properties": {
                 "securityRules": [
                     {
-                        "name": "default-allow-rdp",
+                        "name": "allow-rdp",
                         "properties": {
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
@@ -196,6 +219,19 @@
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "allow-http",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
                             "direction": "Inbound"
                         }
                     }
@@ -221,7 +257,7 @@
                     "imageReference": {
                         "publisher": "MicrosoftWindowsServer",
                         "offer": "WindowsServer",
-                        "sku": "2012-R2-Datacenter",
+                        "sku": "[parameters('vmSku')]",
                         "version": "latest"
                     },
                     "osDisk": {
@@ -229,7 +265,6 @@
                         "caching": "ReadWrite",
                         "createOption": "FromImage",
                         "name": "[variables('diskName')]",
-                        "diskSizeGb": "[variables('diskSize')]",
                         "managedDisk": {
                             "storageAccountType": "[variables('diskType')]"
                         }
@@ -259,80 +294,84 @@
             ]
         },
         {
-        "type": "Microsoft.Compute/virtualMachines/extensions",
-        "name": "[concat(parameters('vmName'),'/Microsoft.Powershell.DSC')]",
-        "apiVersion": "[variables('extensionApiVersion')]",
-        "location": "[resourceGroup().location]",
-        "properties": {
-            "publisher": "Microsoft.Powershell",
-            "type": "DSC",
-            "typeHandlerVersion": "2.19",
-            "autoUpgradeMinorVersion": true,
-            "protectedSettings": {
-                "Items": {
-                    "registrationKeyPrivate": "[parameters('registrationKey')]"
-                }
-            },
-            "settings": {
-                "ModulesUrl": "[parameters('modulesUrl')]",
-                "SasToken": "",
-                "ConfigurationFunction": "[parameters('configurationFunction')]",
-                "Properties": [
-                    {
-                        "Name": "RegistrationKey",
-                        "Value": {
-                            "UserName": "PLACEHOLDER_DONOTUSE",
-                            "Password": "PrivateSettingsRef:registrationKeyPrivate"
-                        },
-                        "TypeName": "System.Management.Automation.PSCredential"
-                    },
-                    {
-                        "Name": "RegistrationUrl",
-                        "Value": "[parameters('registrationUrl')]",
-                        "TypeName": "System.String"
-                    },
-                    {
-                        "Name": "NodeConfigurationName",
-                        "Value": "[parameters('nodeConfigurationName')]",
-                        "TypeName": "System.String"
-                    },
-                    {
-                        "Name": "ConfigurationMode",
-                        "Value": "[parameters('configurationMode')]",
-                        "TypeName": "System.String"
-                    },
-                    {
-                        "Name": "ConfigurationModeFrequencyMins",
-                        "Value": "[parameters('configurationModeFrequencyMins')]",
-                        "TypeName": "System.Int32"
-                    },
-                    {
-                        "Name": "RefreshFrequencyMins",
-                        "Value": "[parameters('refreshFrequencyMins')]",
-                        "TypeName": "System.Int32"
-                    },
-                    {
-                        "Name": "RebootNodeIfNeeded",
-                        "Value": "[parameters('rebootNodeIfNeeded')]",
-                        "TypeName": "System.Boolean"
-                    },
-                    {
-                        "Name": "ActionAfterReboot",
-                        "Value": "[parameters('actionAfterReboot')]",
-                        "TypeName": "System.String"
-                    },
-                    {
-                        "Name": "AllowModuleOverwrite",
-                        "Value": "[parameters('allowModuleOverwrite')]",
-                        "TypeName": "System.Boolean"
-                    },
-                    {
-                        "Name": "Timestamp",
-                        "Value": "[parameters('timestamp')]",
-                        "TypeName": "System.String"
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('vmName'),'/Microsoft.Powershell.DSC')]",
+            "apiVersion": "[variables('extensionApiVersion')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[parameters('vmName')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Powershell",
+                "type": "DSC",
+                "typeHandlerVersion": "2.19",
+                "autoUpgradeMinorVersion": true,
+                "protectedSettings": {
+                    "Items": {
+                        "registrationKeyPrivate": "[parameters('registrationKey')]"
                     }
-                ]
+                },
+                "settings": {
+                    "ModulesUrl": "[parameters('modulesUrl')]",
+                    "SasToken": "",
+                    "ConfigurationFunction": "[parameters('configurationFunction')]",
+                    "Properties": [
+                        {
+                            "Name": "RegistrationKey",
+                            "Value": {
+                                "UserName": "PLACEHOLDER_DONOTUSE",
+                                "Password": "PrivateSettingsRef:registrationKeyPrivate"
+                            },
+                            "TypeName": "System.Management.Automation.PSCredential"
+                        },
+                        {
+                            "Name": "RegistrationUrl",
+                            "Value": "[parameters('registrationUrl')]",
+                            "TypeName": "System.String"
+                        },
+                        {
+                            "Name": "NodeConfigurationName",
+                            "Value": "[parameters('nodeConfigurationName')]",
+                            "TypeName": "System.String"
+                        },
+                        {
+                            "Name": "ConfigurationMode",
+                            "Value": "[parameters('configurationMode')]",
+                            "TypeName": "System.String"
+                        },
+                        {
+                            "Name": "ConfigurationModeFrequencyMins",
+                            "Value": "[parameters('configurationModeFrequencyMins')]",
+                            "TypeName": "System.Int32"
+                        },
+                        {
+                            "Name": "RefreshFrequencyMins",
+                            "Value": "[parameters('refreshFrequencyMins')]",
+                            "TypeName": "System.Int32"
+                        },
+                        {
+                            "Name": "RebootNodeIfNeeded",
+                            "Value": "[parameters('rebootNodeIfNeeded')]",
+                            "TypeName": "System.Boolean"
+                        },
+                        {
+                            "Name": "ActionAfterReboot",
+                            "Value": "[parameters('actionAfterReboot')]",
+                            "TypeName": "System.String"
+                        },
+                        {
+                            "Name": "AllowModuleOverwrite",
+                            "Value": "[parameters('allowModuleOverwrite')]",
+                            "TypeName": "System.Boolean"
+                        },
+                        {
+                            "Name": "Timestamp",
+                            "Value": "[parameters('timestamp')]",
+                            "TypeName": "System.String"
+                        }
+                    ]
+                }
             }
         }
-    }]
+    ]
 }
