@@ -12,10 +12,10 @@ configuration TestConfig
         Service RemoteDesktopService
         {
            # Ensure the Remote Desktop Service is Set to Automatic and is Running
-           Ensure = Present
-           Name = "TermService"
-           StartupType = "Automatic"
-           State = "Running"
+           Ensure = 'Present'
+           Name = 'TermService'
+           StartupType = 'Automatic'
+           State = 'Running'
         }
     }
 
