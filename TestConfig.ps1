@@ -37,7 +37,7 @@ configuration TestConfig
         }
         File cssfile
         {            	
-            # And the CSS styles file for the home page
+            # And the CSS styles file
             Ensure = "Present"
             Type = "File"
             SourcePath ="C:\application\data\styles.css"
