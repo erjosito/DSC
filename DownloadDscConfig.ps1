@@ -63,3 +63,34 @@ if ($myConfig) {
     Write-Output ("The config '" + $configName + "' does not seem to exist in automation account '" + $accountName + "'")
 }
 
+# Download web files and copy them to an Azure Files share
+# The goal here was to provide a repository from where DSC could deploy the files, since DSC does not support
+#   downloading from HTTP URLs. However, the workaround is just using a Script resource in DSC with the 
+#   powershell command Invoke-HttpRequest
+<#
+Write-Output ("Copying files from Github to local file system...")
+$StorageAccountName = "permanentlabdisks578"
+$rscgrp = "PermanentLab"
+$shareName = "myshare"
+$shareDir = "webfiles"
+$srcDir = "https://raw.githubusercontent.com/erjosito/DSC/master/"
+$localDir = $tmpDir + "\"
+$files = @("index.html", "styles.css", "favicon.ico")
+foreach ($file in $files) {
+    $srcFile = $srcDir + $file
+    $localFile = $localDir + $file
+    Invoke-WebRequest -Uri $srcFile -OutFile $localFile
+}
+Write-Output ("Copying files from local file system to an Azure Files share...")
+$myshare = Get-AzureRmStorageAccount -name $StorageAccountName -ResourceGroupName $rg | Get-AzureStorageShare -Name $shareName
+if ($myshare) {
+    Write-Output ("Share '" + $shareName + "' found in storage account '" + $StorageAccountName + "'")
+} else {
+    Write-Output ("Share '" + $shareName + "' could not be found in storage account '" + $StorageAccountName + "'")
+    Exit    
+}
+foreach ($file in $files) {
+    $localFile = $localDir + $file
+    Set-AzureStorageFileContent -share $myshare -Source $localFile -Path $shareDir
+}
+#>

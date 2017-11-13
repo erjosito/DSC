@@ -17,18 +17,20 @@ configuration TestConfig
             StartupType = 'Automatic'
             State = 'Running'
         }
-        #Files from URL
-        #{            	
-        #    # Download an HTML home page
-        #    # net use Z: \\permanentlabdisks578.file.core.windows.net\myshare /u:AZURE\permanentlabdisks578 SQm+x0M2Vk4lLAatfLmIlS4ErI4fXC6JbPH9LevqgsU11Y/XM/dQg9gS+fCleyBDr51x+poYBalnXi1R7SOtZQ==
-        #    Ensure = "Present"
-        #    Type = "File"
-        #    #SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/index.html"
-        #    SourcePath="\\permanentlabdisks578.file.core.windows.net\myshare\webfiles\index.html"
-        #    DestinationPath = "C:\inetpub\wwwroot\index.html"
-        #    Credential = $storageCredentials
-        #    MatchSource = $true
-        #}
+        <#
+        # Since DSC cannot download from a Web URL, the script resource right after seems like a quick & dirty
+        #  solution. Otherwise putting the files in an interim Azure Files share might be an idea.
+        File webPage
+        {            	
+            # Download an HTML home page
+            Ensure = "Present"
+            Type = "File"
+            SourcePath="\\permanentlabdisks578.file.core.windows.net\myshare\webfiles\index.html"
+            DestinationPath = "C:\inetpub\wwwroot\index.html"
+            Credential = $storageCredentials
+            MatchSource = $true
+        }
+        #>
         Script myScript
         { 
             GetScript = { $False }
