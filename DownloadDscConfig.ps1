@@ -11,7 +11,7 @@
 $connectionName = "AzureRunAsConnection"
 $subName = "Visual Studio Enterprise"
 $rg = "PermanentLab"
-$accountName = "myautomation"
+$accountName = "myDscAutomation"
 $configUrl = "https://raw.githubusercontent.com/erjosito/DSC/master/TestConfig.ps1"
 $configUrlSplit = $configUrl.Split("/")
 $filename = $configUrlSplit[$configUrlSplit.Length - 1]
