@@ -33,7 +33,7 @@ configuration TestConfig
         #>
         Script myScript
         { 
-            GetScript = { $False }
+            GetScript = { @{ Result = (Get-Content C:\inetpub\wwwroot\index.html) } }
             SetScript = {
                 Invoke-WebRequest -uri https://raw.githubusercontent.com/erjosito/DSC/master/index.html -outfile C:\inetpub\wwwroot\index.html
                 Invoke-WebRequest -uri https://raw.githubusercontent.com/erjosito/DSC/master/styles.css -outfile C:\inetpub\wwwroot\styles.css
