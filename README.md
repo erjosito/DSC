@@ -15,7 +15,9 @@ I used Azure CLI for that:
 
 1. Log into the German Cloud:
 
+```
 az cloud set -n AzureGermanCloud
+```
 
 "az login" with a token that you need to validate in https://aka.ms/deviceloginde did not work for me (the portal didnt take the token for some reason), so I had to use standard password-based auth:
 
