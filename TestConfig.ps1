@@ -30,10 +30,10 @@ configuration TestConfig
         #    MatchSource = $true
         #}
         Script myScript
-        {
-            GetScript = " $False "
-            SetScript = "Invoke-WebRequest -uri https://raw.githubusercontent.com/erjosito/DSC/master/index.html -outfile C:\inetpub\wwwroot\index.html" 
-            TestScript = " $False "
+        { 
+            GetScript = { $False }
+            SetScript = { Invoke-WebRequest -uri https://raw.githubusercontent.com/erjosito/DSC/master/index.html -outfile C:\inetpub\wwwroot\index.html } 
+            TestScript = { $False }
         }
 
     }
