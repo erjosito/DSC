@@ -9,6 +9,14 @@ configuration TestConfig
             Name                 = 'Web-Server'
             IncludeAllSubFeature = $true
         }
+
+        WindowsFeature staticContent
+        {
+            Ensure = 'Present'
+            Name = 'Web-Static-Content'
+            DependsOn = 'IIS'
+        }
+
         Service RemoteDesktopService
         {
             # Ensure the Remote Desktop Service is Set to Automatic and is Running
