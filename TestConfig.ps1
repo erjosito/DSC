@@ -17,13 +17,13 @@ configuration TestConfig
             StartupType = 'Automatic'
             State = 'Running'
         }
-        #File index
+        #Files from URL
         #{            	
-            # Download an HTML home page
-            # net use Z: \\permanentlabdisks578.file.core.windows.net\myshare /u:AZURE\permanentlabdisks578 SQm+x0M2Vk4lLAatfLmIlS4ErI4fXC6JbPH9LevqgsU11Y/XM/dQg9gS+fCleyBDr51x+poYBalnXi1R7SOtZQ==
+        #    # Download an HTML home page
+        #    # net use Z: \\permanentlabdisks578.file.core.windows.net\myshare /u:AZURE\permanentlabdisks578 SQm+x0M2Vk4lLAatfLmIlS4ErI4fXC6JbPH9LevqgsU11Y/XM/dQg9gS+fCleyBDr51x+poYBalnXi1R7SOtZQ==
         #    Ensure = "Present"
         #    Type = "File"
-            #SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/index.html"
+        #    #SourcePath ="https://raw.githubusercontent.com/erjosito/DSC/master/index.html"
         #    SourcePath="\\permanentlabdisks578.file.core.windows.net\myshare\webfiles\index.html"
         #    DestinationPath = "C:\inetpub\wwwroot\index.html"
         #    Credential = $storageCredentials
@@ -32,7 +32,11 @@ configuration TestConfig
         Script myScript
         { 
             GetScript = { $False }
-            SetScript = { Invoke-WebRequest -uri https://raw.githubusercontent.com/erjosito/DSC/master/index.html -outfile C:\inetpub\wwwroot\index.html } 
+            SetScript = {
+                Invoke-WebRequest -uri https://raw.githubusercontent.com/erjosito/DSC/master/index.html -outfile C:\inetpub\wwwroot\index.html
+                Invoke-WebRequest -uri https://raw.githubusercontent.com/erjosito/DSC/master/styles.css -outfile C:\inetpub\wwwroot\styles.css
+                Invoke-WebRequest -uri https://raw.githubusercontent.com/erjosito/DSC/master/favicon.ico -outfile C:\inetpub\wwwroot\favicon.ico
+            } 
             TestScript = { $False }
         }
 
