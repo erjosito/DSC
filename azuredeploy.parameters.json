@@ -12,8 +12,8 @@
         "modulesUrl": { "value": "https://github.com/erjosito/DSC/raw/master/UpdateLCMforAAPull.zip" },
         "configurationFunction": { "value": "UpdateLCMforAAPull.ps1\\ConfigureLCMforAAPull" },
 
-        "registrationKey": { "value": "zwc1uis4aIP54YGCfSyvcq2lRxrnz3IZO+02TH9jED/VItFg7PkJb1poGeZ4Sl23qmI31JSGP8VQVmzVNbM3gQ==" },
-        "registrationUrl": { "value": "https://we-agentservice-prod-1.azure-automation.net/accounts/0cbf9646-e5b2-453a-a5f3-700d426e02fc" },
+        "registrationKey": { "value": "WSmPhEIV4vu2wjoPs06zfCnLCAWEnzmRI7pEeF263llSDPlgLbPs5Vddfl/Ko6Rs5HwSp0zr8Y1Uox7H/smbTg==" },
+        "registrationUrl": { "value": "https://we-agentservice-prod-1.azure-automation.net/accounts/224831e0-ce3d-4b03-b46f-e4fc096ef8e3" },
         "nodeConfigurationName": { "value": "TestConfig.myConfig1" },
 
         "configurationMode": { "value": "ApplyAndMonitor" },
