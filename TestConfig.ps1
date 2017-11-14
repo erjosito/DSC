@@ -16,7 +16,7 @@ configuration TestConfig
         {
             Ensure = 'Present'
             Name = 'Web-Static-Content'
-            DependsOn = 'IIS'
+            DependsOn = '[WindowsFeature]IIS'
         }
 
         Service RemoteDesktopService
@@ -27,7 +27,7 @@ configuration TestConfig
             StartupType = 'Automatic'
             State = 'Running'
         }
-        
+
         # Since DSC cannot download from a Web URL, the script resource right after seems like a quick & dirty
         #  solution. Otherwise putting the files in an interim Azure Files share might be an idea.
         File webPage
