@@ -50,7 +50,7 @@ configuration TestConfig
             Credential = $myShareCredentials
             MatchSource = $true
         }
-        File webPage
+        File favicon
         {            	
             # Download favicon
             Ensure = "Present"
