@@ -1,5 +1,7 @@
 configuration TestConfig
 {
+    $myShareCredentials = Get-AutomationPSCredential -Name "myShare"
+
     Node myConfig1
     {
         WindowsFeature IIS
@@ -25,7 +27,7 @@ configuration TestConfig
             StartupType = 'Automatic'
             State = 'Running'
         }
-        <#
+        
         # Since DSC cannot download from a Web URL, the script resource right after seems like a quick & dirty
         #  solution. Otherwise putting the files in an interim Azure Files share might be an idea.
         File webPage
@@ -35,10 +37,10 @@ configuration TestConfig
             Type = "File"
             SourcePath="\\permanentlabdisks578.file.core.windows.net\myshare\webfiles\index.html"
             DestinationPath = "C:\inetpub\wwwroot\index.html"
-            Credential = $storageCredentials
+            Credential = $myShareCredentials
             MatchSource = $true
         }
-        #>
+        <#
         Script myScript
         { 
             GetScript = { @{ Result = (Get-Content C:\inetpub\wwwroot\index.html) } }
@@ -49,7 +51,7 @@ configuration TestConfig
             } 
             TestScript = { $False }
         }
-
+        #>
     }
 
     Node myConfig2
