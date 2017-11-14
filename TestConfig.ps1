@@ -29,7 +29,7 @@ configuration TestConfig
         }
 
         # Since DSC cannot download from a Web URL, the script resource right after seems like a quick & dirty
-        #  solution. Otherwise putting the files in an interim Azure Files share might be an idea.
+        #  solution. Otherwise putting the files in an interim Azure Files share is a workaround.
         File webPage
         {            	
             # Download an HTML home page
@@ -40,6 +40,27 @@ configuration TestConfig
             Credential = $myShareCredentials
             MatchSource = $true
         }
+        File cssFile
+        {            	
+            # Download CSS
+            Ensure = "Present"
+            Type = "File"
+            SourcePath="\\permanentlabdisks578.file.core.windows.net\myshare\webfiles\styles.css"
+            DestinationPath = "C:\inetpub\wwwroot\styles.css"
+            Credential = $myShareCredentials
+            MatchSource = $true
+        }
+        File webPage
+        {            	
+            # Download favicon
+            Ensure = "Present"
+            Type = "File"
+            SourcePath="\\permanentlabdisks578.file.core.windows.net\myshare\webfiles\favicon.ico"
+            DestinationPath = "C:\inetpub\wwwroot\favicon.ico"
+            Credential = $myShareCredentials
+            MatchSource = $true
+        }
+
         <#
         Script myScript
         { 
