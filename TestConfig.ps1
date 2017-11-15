@@ -39,6 +39,7 @@ configuration TestConfig
             DestinationPath = "C:\inetpub\wwwroot\index.html"
             Credential = $myShareCredentials
             MatchSource = $true
+            Force = $true
         }
         File cssFile
         {            	
@@ -49,6 +50,7 @@ configuration TestConfig
             DestinationPath = "C:\inetpub\wwwroot\styles.css"
             Credential = $myShareCredentials
             MatchSource = $true
+            Force = $true
         }
         File favicon
         {            	
@@ -59,6 +61,7 @@ configuration TestConfig
             DestinationPath = "C:\inetpub\wwwroot\favicon.ico"
             Credential = $myShareCredentials
             MatchSource = $true
+            Force = $true
         }
 
         <#
