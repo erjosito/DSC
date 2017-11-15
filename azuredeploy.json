@@ -25,7 +25,7 @@
         "vmSize": {
             "defaultValue": "Standard_A0",
             "type": "string",
-			"allowedValues": [ "Standard_A0", "Standard_A1_v2", "Standard_D2_v3", "Standard_D2s_v3", "Standard_D1_v2", "Standard_DS1_v2" ],
+			"allowedValues": [ "Standard_A0", "Standard_A1_v2", "Standard_D2_v2", "Standard_D2s_v2", "Standard_D1_v2", "Standard_DS1_v2" ],
             "metadata": { "description": "Size of the new VM. Only a limited subset of sizes are supported" }
         },
         "vnetName": {

@@ -60,8 +60,6 @@ configuration TestConfig
             SourcePath="\\permanentlabdisks578.file.core.windows.net\myshare\webfiles\favicon.ico"
             DestinationPath = "C:\inetpub\wwwroot\favicon.ico"
             Credential = $myShareCredentials
-            MatchSource = $true
-            Force = $true
         }
 
         <#
