@@ -38,6 +38,7 @@ configuration TestConfig
             SourcePath="\\permanentlabdisks578.file.core.windows.net\myshare\webfiles\index.html"
             DestinationPath = "C:\inetpub\wwwroot\index.html"
             Credential = $myShareCredentials
+            Checksum = "modifiedDate"
             MatchSource = $true
             Force = $true
         }
@@ -49,6 +50,7 @@ configuration TestConfig
             SourcePath="\\permanentlabdisks578.file.core.windows.net\myshare\webfiles\styles.css"
             DestinationPath = "C:\inetpub\wwwroot\styles.css"
             Credential = $myShareCredentials
+            Checksum = "modifiedDate"
             MatchSource = $true
             Force = $true
         }
